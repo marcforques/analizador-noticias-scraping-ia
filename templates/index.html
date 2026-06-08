@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Sentimiento Macro</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <style>
+        body {
+            background: #0f172a;
+            color: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .page-shell {
+            max-width: 1180px;
+        }
+        .card-custom {
+            background-color: #1e293b;
+            border: 1px solid #475569;
+            border-radius: 10px;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+        }
+        .label-muted {
+            color: #93b5d8;
+            letter-spacing: 0.02em;
+        }
+        .text-muted {
+            color: #a8bbd4 !important;
+        }
+        .text-light-emphasis {
+            color: #d7e2f0 !important;
+        }
+        .analisis-texto {
+            font-size: 0.92rem;
+            line-height: 1.6;
+        }
+        .progress {
+            background-color: #334155;
+            height: 20px;
+            border-radius: 10px;
+        }
+        .score-row {
+            gap: 12px;
+        }
+        .score-row span {
+            white-space: nowrap;
+        }
+        .factor-badge {
+            max-width: 100%;
+            white-space: normal;
+            text-align: left;
+            line-height: 1.35;
+            background-color: #64748b !important;
+            border-color: #94a3b8 !important;
+        }
+        .noticias-scroll {
+            max-height: 610px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 8px;
+            scrollbar-color: #94a3b8 #1e293b;
+        }
+        .noticia-item {
+            background-color: #0f172a;
+            border-left: 4px solid #3b82f6;
+            padding: 14px 16px;
+        }
+        .noticia-item h3 {
+            overflow-wrap: break-word;
+            line-height: 1.35;
+            margin-bottom: 0;
+        }
+        .texto-estrellas {
+            color: #f8fafc;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div class="container page-shell py-5">
+        <header class="pb-4 mb-5 border-bottom border-secondary">
+            <h1 class="text-info fw-bold mb-2">
+                <i class="fa-solid fa-chart-line me-2"></i>Analizador de Noticias
+            </h1>
+            <p class="text-muted small mb-0">https://www.eleconomista.es/ultimas-noticias/</p>
+        </header>
+
+        <div class="row g-4 align-items-stretch">
+            <div class="col-lg-7">
+                <div class="card card-custom p-4 h-100">
+                    <h2 class="h5 fw-bold text-light mb-4">
+                        <i class="fa-solid fa-robot text-warning me-2"></i>Analisis de sentimiento
+                    </h2>
+
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center score-row small fw-bold mb-2">
+                            <span class="text-danger">Minimo (-1.0)</span>
+                            <span class="text-warning font-monospace">Score: {{ analisis.score_sentimiento }}</span>
+                            <span class="text-success">Maximo (1.0)</span>
+                        </div>
+
+                        <div class="progress">
+                            {% set porcentaje = ((analisis.score_sentimiento + 1) * 50) | int %}
+                            <div class="progress-bar bg-gradient bg-primary"
+                                 role="progressbar"
+                                 style="width: {{ porcentaje }}%; transition: width 0.6s ease;"
+                                 aria-valuenow="{{ porcentaje }}"
+                                 aria-valuemin="0"
+                                 aria-valuemax="100">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <span class="label-muted text-uppercase d-block small fw-semibold mb-2">Justificacion del modelo</span>
+                        <p class="text-light-emphasis analisis-texto mb-0">{{ analisis.justificacion }}</p>
+                    </div>
+
+                    <div>
+                        <span class="label-muted text-uppercase d-block small fw-semibold mb-2">Factores de riesgo / oportunidad</span>
+                        <div class="d-flex flex-column gap-2">
+                            {% for factor in analisis.factores_clave %}
+                            <span class="badge factor-badge text-light px-3 py-2">
+                                <i class="fa-solid fa-tag me-1 text-info"></i>{{ factor }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="card card-custom p-4 h-100">
+                    <h2 class="h5 fw-bold text-light mb-3">
+                        <i class="fa-solid fa-newspaper text-info me-2"></i>Fuentes Extraidas
+                    </h2>
+                    <p class="text-muted small mb-4">Titulares scrapeados en directo de El Economista:</p>
+
+                    <div class="d-flex flex-column gap-3 noticias-scroll">
+                        {% for noticia in noticias %}
+                        <div class="noticia-item rounded">
+                            <h3 class="h6 text-white fw-bold small">{{ noticia.titular }}</h3>
+
+                            <div class="mt-3 pt-2 border-top border-secondary border-opacity-25">
+                                <span class="small texto-estrellas font-monospace">
+                                    <i class="fa-solid fa-star text-warning me-1"></i>{{ noticia.estrellas_transformer }}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
