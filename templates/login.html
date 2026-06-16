@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar sesión | Analizador de Noticias</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <style>
+        body {
+            min-height: 100vh;
+            background: #0f172a;
+            color: #f8fafc;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 430px;
+            background-color: #1e293b;
+            border: 1px solid #475569;
+            border-radius: 14px;
+            box-shadow: 0 18px 45px rgba(0, 0, 0, 0.3);
+        }
+
+    </style>
+</head>
+<body class="d-flex align-items-center justify-content-center p-3">
+    <main class="login-card p-4 p-md-5">
+        <div class="text-center mb-4">
+            <i class="fa-solid fa-chart-line fa-3x text-info mb-3"></i>
+            <h1 class="h3 fw-bold mb-2">Analizador de Noticias</h1>
+            <p class="text-secondary mb-0">Introduce tus credenciales para continuar</p>
+        </div>
+
+        {% if error %}
+        <div class="alert alert-danger" role="alert">
+            <i class="fa-solid fa-circle-exclamation me-2"></i>
+            Usuario o contraseña incorrectos.
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('login') }}">
+            <div class="mb-3">
+                <label for="login" class="form-label">Usuario</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-dark border-secondary text-light">
+                        <i class="fa-solid fa-user"></i>
+                    </span>
+                    <input
+                        type="text"
+                        class="form-control"
+                        id="login"
+                        name="login"
+                        placeholder="Escribe tu usuario"
+                        required
+                        autofocus
+                    >
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="password" class="form-label">Contraseña</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-dark border-secondary text-light">
+                        <i class="fa-solid fa-lock"></i>
+                    </span>
+                    <input
+                        type="password"
+                        class="form-control"
+                        id="password"
+                        name="password"
+                        placeholder="Escribe tu contraseña"
+                        required
+                    >
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-info fw-bold w-100 py-2">
+                <i class="fa-solid fa-right-to-bracket me-2"></i>
+                Iniciar sesión
+            </button>
+        </form>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

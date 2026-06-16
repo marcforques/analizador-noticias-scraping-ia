@@ -1,6 +1,6 @@
 # Analizador de Noticias con Scraping e IA
 
-Aplicacion web desarrollada con Flask que extrae titulares recientes de El Economista, calcula el sentimiento de cada noticia con un modelo Transformer multilingue y genera un informe de mercado mediante Ollama.
+Aplicacion web desarrollada con Flask que permite iniciar sesion, extrae titulares recientes de El Economista, calcula el sentimiento de cada noticia con un modelo Transformer multilingue, guarda los resultados en MongoDB y genera un informe de mercado mediante Ollama.
 
 El proyecto combina scraping, procesamiento de lenguaje natural e IA generativa local para construir un pequeno dashboard de analisis informativo.
 
@@ -34,6 +34,8 @@ analizador-noticias-scraping-ia/
 |   +-- analisis_sentimiento.py
 |   +-- generar_informe.py
 +-- templates/
+|   +-- login.html
+|   +-- home.html
 |   +-- index.html
 +-- .gitignore
 +-- requirements.txt
@@ -42,10 +44,12 @@ analizador-noticias-scraping-ia/
 
 ## Que hace cada archivo
 
-- `app.py`: inicia Flask y coordina el flujo completo de la aplicacion.
+- `app.py`: inicia Flask, gestiona el login, guarda noticias en MongoDB y coordina el flujo completo de la aplicacion.
 - `modelos/scraping.py`: usa Selenium para abrir El Economista y obtener titulares recientes.
 - `modelos/analisis_sentimiento.py`: analiza cada titular con un Transformer multilingue de Hugging Face.
 - `modelos/generar_informe.py`: envia los resultados a Ollama y pide una respuesta estructurada en JSON.
+- `templates/login.html`: renderiza la pantalla de acceso.
+- `templates/home.html`: muestra la pantalla inicial del usuario autenticado.
 - `templates/index.html`: renderiza el dashboard con Bootstrap y Font Awesome.
 - `requirements.txt`: contiene las dependencias necesarias de Python.
 - `.gitignore`: excluye entornos virtuales, caches, logs, zips y `chromedriver.exe`.
@@ -57,6 +61,7 @@ analizador-noticias-scraping-ia/
 - ChromeDriver compatible con la version instalada de Chrome, o conexion a internet para que `webdriver-manager` lo descargue.
 - Ollama instalado y ejecutandose en local.
 - Modelo `llama3.2` descargado en Ollama.
+- MongoDB disponible y una coleccion `usuarios` con credenciales de acceso.
 
 ## Instalación
 
@@ -81,6 +86,11 @@ ollama serve
 
 > Si Ollama ya esta abierto como servicio o aplicacion de escritorio, no hace falta ejecutar `ollama serve`.
 
+5. Crear un archivo `.env` con las variables necesarias:
+
+SECRET_KEY=clave-secreta
+MONGODB_URI=mongodb://localhost:27017/
+
 ## Ejecucion
 
 Con el entorno virtual activado:
@@ -95,13 +105,15 @@ La primera ejecucion puede tardar mas porque el modelo Transformer puede descarg
 
 ## Flujo de la aplicacion
 
-1. Selenium abre `https://www.eleconomista.es/ultimas-noticias/`.
-2. Se acepta el aviso de cookies si aparece.
-3. Se extraen hasta 15 titulares.
-4. El modelo Transformer asigna estrellas y un score a cada titular.
-5. Se calcula un score medio agregado.
-6. Ollama genera un informe en formato JSON con veredicto, justificacion y factores clave.
-7. Flask renderiza los resultados en el dashboard.
+1. El usuario inicia sesion con credenciales guardadas en MongoDB.
+2. Selenium abre `https://www.eleconomista.es/ultimas-noticias/`.
+3. Se acepta el aviso de cookies si aparece.
+4. Se extraen hasta 15 titulares.
+5. El modelo Transformer asigna estrellas y un score a cada titular.
+6. Las noticias analizadas se guardan en MongoDB.
+7. Se calcula un score medio agregado.
+8. Ollama genera un informe en formato JSON con veredicto, justificacion y factores clave.
+9. Flask renderiza los resultados en el dashboard.
 
 ## Interpretacion del score
 
@@ -130,9 +142,8 @@ La puntuacion se obtiene a partir de las estrellas del modelo Transformer:
 ## Posibles mejoras
 
 - Permitir elegir la fuente de noticias desde la interfaz.
-- Guardar historico de scores en una base de datos.
+- Guardar historico de scores por usuario.
 - Anadir graficos de evolucion temporal.
 - Incluir analisis por sectores o palabras clave.
 - Ejecutar el scraping en segundo plano para mejorar la experiencia de usuario.
 - Anadir tests unitarios para el calculo de sentimiento y el parseo de la respuesta de Ollama.
-

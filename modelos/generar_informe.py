@@ -23,7 +23,6 @@ def generar_informe(noticias, score):
     Debes estructurar tu respuesta SOLO en un formato JSON valido.
     La estructura exacta del JSON debe ser:
     {{
-        "veredicto": "Ej: Alcista / Correccion Tecnica / Cautela",
         "justificacion": "Tu analisis experto detallado. Conecta los titulares con el score calculado por el Transformer para explicar la situacion del mercado.",
         "factores_clave": ["Factor economico 1", "Factor economico 2", "Factor economico 3"]
     }}

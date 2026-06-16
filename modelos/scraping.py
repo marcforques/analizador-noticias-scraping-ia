@@ -1,9 +1,12 @@
 from pathlib import Path
+import tempfile
 import time
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.common.exceptions import WebDriverException
 from webdriver_manager.chrome import ChromeDriverManager
 
 
@@ -30,29 +33,50 @@ def obtener_titular(noticia):
 
 
 def iniciar_driver():
-    if RUTA_CHROMEDRIVER.exists():
-        driver = webdriver.Chrome(service=ChromeService(str(RUTA_CHROMEDRIVER)))
-    else:
-        driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
+    perfil_temporal = tempfile.mkdtemp(prefix="chrome-selenium-", dir="C:\\tmp")
 
+    opciones = ChromeOptions()
+    opciones.add_argument("--disable-gpu")
+    opciones.add_argument("--no-sandbox")
+    opciones.add_argument("--disable-dev-shm-usage")
+    opciones.add_argument("--disable-crash-reporter")
+    opciones.add_argument("--disable-extensions")
+    opciones.add_argument(f"--user-data-dir={perfil_temporal}")
+    opciones.add_argument("--window-size=1366,900")
+
+    if RUTA_CHROMEDRIVER.exists():
+        driver = webdriver.Chrome(
+        service=ChromeService(str(RUTA_CHROMEDRIVER)),
+        options=opciones
+    )
+    else:
+        driver = webdriver.Chrome(
+            service=ChromeService(ChromeDriverManager().install()),
+            options=opciones
+        )
+
+    driver.set_page_load_timeout(30)
+    driver.implicitly_wait(5)
     return driver
 
 
 def scraping_noticias():
-    driver = iniciar_driver()
-    driver.get("https://www.eleconomista.es/ultimas-noticias/")
-    time.sleep(5)
+    driver = None
 
     noticias = []
 
     try:
+        driver = iniciar_driver()
+        driver.get("https://www.eleconomista.es/ultimas-noticias/")
+        time.sleep(5)
+
         # Pulsamos el boton de aceptar cookies si aparece
         boton_aceptar = driver.find_elements(
-            By.XPATH, "//mrf-button"
+            By.XPATH, "//a[@data-mrf-role='userAgreeToAll']"
         )
 
         if boton_aceptar:
-            boton_aceptar[0].click()
+            driver.execute_script("arguments[0].click();", boton_aceptar[0])
             time.sleep(2)
 
         # Bajamos un poco hasta la zona donde aparecen las noticias
@@ -85,17 +109,22 @@ def scraping_noticias():
                 if len(noticias) == 15:
                     break
 
-        print("\nTitulares extraidos por Selenium:")
+        print("\nTitulares extraidos:")
         if noticias:
             for idx, noticia in enumerate(noticias, start=1):
                 print(f"{idx}. {noticia['titular']}")
         else:
             print("No se encontraron titulares.")
 
+    except WebDriverException as e:
+        print(f"Error al abrir Chrome o cargar la pagina: {e}")
+
     except Exception as e:
         print(f"Error detectado durante el scraping: {e}")
 
     finally:
-        driver.quit()
+        if driver:
+            time.sleep(3)
+            driver.quit()
 
     return noticias
